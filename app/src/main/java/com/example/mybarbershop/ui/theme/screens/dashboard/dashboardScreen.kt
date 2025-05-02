@@ -118,7 +118,7 @@ fun DashboardScreen(navController: NavController){
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TopAppBar(
-                title = { Text(text = "Strathmore") },
+                title = { Text(text = "") },
                 navigationIcon = {
                     IconButton(onClick = {}) {
                         Icon(
@@ -169,7 +169,7 @@ fun DashboardScreen(navController: NavController){
                             .padding(25.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Students", color = Color.White)
+                        Text(text = "MensSection", color = Color.White)
                     }
                 }
 
@@ -188,7 +188,7 @@ fun DashboardScreen(navController: NavController){
                             .padding(25.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Students", color = Color.White)
+                        Text(text = "WomensSection", color = Color.White)
                     }
                 }
 
@@ -206,16 +206,17 @@ fun DashboardScreen(navController: NavController){
                             .padding(25.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Students", color = Color.White)
+                        Text(text = "Massage", color = Color.White)
                     }
                 }
 
+            }
         }
-    }
+    }}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun DashboardScreenPreview(){
+    DashboardScreen(rememberNavController())
 }
 
-@Preview(showSystemUi = true, showBackground = true)
-@Composable
-fun DashboardScreenPreview() {
-    com.example.mybarbershop.ui.theme.screens.dashboard.DashboardScreen(rememberNavController())
-}
