@@ -41,16 +41,38 @@ import com.example.mybarbershop.navigation.ROUTE_ADD_BARBER_BOOKING
             Spacer(modifier = Modifier.height(16.dp))
 
             HairStyleCard(
-                title = "Haircut",
-                imageRes = R.drawable.haircut1,
-                onClick = { navController.navigate(ROUTE_ADD_BARBER_BOOKING) }
+                title = "Cornrows",
+                imageRes = R.drawable.haircut,
+                onClick = { navController.navigate(ROUTE_ADD_BARBER_BOOKING) },
+
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             HairStyleCard(
-                title = "Beard Trim",
-                imageRes = R.drawable.beard_trim,
+                title = "Afrotaper",
+                imageRes = R.drawable.afrotaper,
+                onClick = { navController.navigate(ROUTE_ADD_BARBER_BOOKING) }
+            )
+            HairStyleCard(
+                title = "mid taper",
+                imageRes = R.drawable.midtaper,
+                onClick = { navController.navigate(ROUTE_ADD_BARBER_BOOKING) }
+            )
+
+            HairStyleCard(
+                title = "buzzcut",
+                imageRes = R.drawable.buzzcut,
+                onClick = { navController.navigate(ROUTE_ADD_BARBER_BOOKING) }
+            )
+            HairStyleCard(
+                title = "afro mohawk",
+                imageRes = R.drawable.afromohawk,
+                onClick = { navController.navigate(ROUTE_ADD_BARBER_BOOKING) }
+            )
+            HairStyleCard(
+                title = " braids",
+                imageRes = R.drawable.braids,
                 onClick = { navController.navigate(ROUTE_ADD_BARBER_BOOKING) }
             )
         }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -57,7 +58,7 @@ fun DashboardScreen(navController: NavController){
     val context = LocalContext.current
     Scaffold (
         bottomBar = {
-            NavigationBar (containerColor = Color.Red){
+            NavigationBar (containerColor = Color.Black){
                 NavigationBarItem(
                     selected = selectedItem.value == 0,
                     onClick = {selectedItem.value = 0
@@ -110,7 +111,7 @@ fun DashboardScreen(navController: NavController){
                 painter = painterResource(id = R.drawable.background),
                 contentDescription = "background image",
                 contentScale = ContentScale.FillBounds,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding).size(700.dp)
             )
         }
         Column(
@@ -148,7 +149,7 @@ fun DashboardScreen(navController: NavController){
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Red,
+                    containerColor = Color.Black,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White,
                     actionIconContentColor = Color.White
@@ -161,7 +162,7 @@ fun DashboardScreen(navController: NavController){
                         .clickable { navController.navigate(ROUTE_MENSSECTION) },
                     shape = RoundedCornerShape(20.dp),
                     elevation = CardDefaults.cardElevation(10.dp),
-                    colors = CardDefaults.cardColors(Color.Red)
+                    colors = CardDefaults.cardColors(Color.Black)
                 ) {
                     Box(
                         modifier = Modifier
@@ -169,7 +170,7 @@ fun DashboardScreen(navController: NavController){
                             .padding(25.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "MensSection", color = Color.White)
+                        Text(text = "Men", color = Color.Yellow)
                     }
                 }
 
@@ -180,7 +181,7 @@ fun DashboardScreen(navController: NavController){
                         .clickable { navController.navigate(ROUTE_WOMENSSECTION) },
                     shape = RoundedCornerShape(20.dp),
                     elevation = CardDefaults.cardElevation(10.dp),
-                    colors = CardDefaults.cardColors(Color.Red)
+                    colors = CardDefaults.cardColors(Color.Black)
                 ) {
                     Box(
                         modifier = Modifier
@@ -188,7 +189,7 @@ fun DashboardScreen(navController: NavController){
                             .padding(25.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "WomensSection", color = Color.White)
+                        Text(text = "Women", color = Color.Yellow)
                     }
                 }
 
@@ -198,7 +199,7 @@ fun DashboardScreen(navController: NavController){
                         .clickable { navController.navigate(ROUTE_MASSAGE) },
                     shape = RoundedCornerShape(20.dp),
                     elevation = CardDefaults.cardElevation(10.dp),
-                    colors = CardDefaults.cardColors(Color.Red)
+                    colors = CardDefaults.cardColors(Color.Black)
                 ) {
                     Box(
                         modifier = Modifier
@@ -206,7 +207,7 @@ fun DashboardScreen(navController: NavController){
                             .padding(25.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Massage", color = Color.White)
+                        Text(text = "Massage", color = Color.Yellow)
                     }
                 }
 
