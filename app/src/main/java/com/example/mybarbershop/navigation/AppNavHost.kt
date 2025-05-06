@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.mybarbershop.models.BarberAppointmentViewModel
 import com.example.mybarbershop.ui.theme.screens.SplashScreen
 import com.example.mybarbershop.ui.theme.screens.barberbooking.AddBarberBookingScreen
 import com.example.mybarbershop.ui.theme.screens.dashboard.DashboardScreen
@@ -28,7 +29,11 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         composable(ROUTE_MENSSECTION) { MensSectionScreen(navController) }
         composable(ROUTE_WOMENSSECTION) { WomensSectionScreen(navController) }
         composable(ROUTE_MASSAGE) { AddMassageScreen() }
-        composable(ROUTE_ADD_BARBER_BOOKING) { AddBarberBookingScreen() }
+        composable(ROUTE_ADD_BARBER_BOOKING) {
+            val viewModel: BarberAppointmentViewModel = BarberAppointmentViewModel()
+            AddBarberBookingScreen(viewModel = viewModel)
+        }
+
         composable(ROUTE_ADD_SALON_BOOKING) { AddSalonBookingScreen() }
     }
 }

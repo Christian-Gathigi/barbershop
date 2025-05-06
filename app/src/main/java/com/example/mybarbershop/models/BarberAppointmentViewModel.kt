@@ -1,73 +1,50 @@
 package com.example.mybarbershop.models
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.ViewModel
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.mybarbershop.data.BarberAppointmentModel.Barber
-import com.example.mybarbershop.data.BarberAppointmentModel.Booking
+import com.example.mybarbershop.data.BarberAppointmentModel.BarberBooking
 import com.example.mybarbershop.data.BarberAppointmentModel.Hairstyle
+import com.example.mybarbershop.ui.theme.screens.barberbooking.AddBarberBookingScreen
 import java.time.LocalDateTime
 
-class BarberAppointmentViewModel : ViewModel() {
+// Simulated data (should be in ViewModel or repository)
+val bookings = mutableListOf<BarberBooking>()
+val barbers = listOf(
+    Barber(id = "1", name = "Joe"),
+    Barber(id = "2", name = "Mike")
+)
+val hairstyles = listOf(
+    Hairstyle(id = "1", name = "Buzz Cut", durationMinutes = 30),
+    Hairstyle(id = "2", name = "Fade", durationMinutes = 45)
+)
 
-    private val _barbers = mutableStateListOf<Barber>()
-    val barbers: List<Barber> get() = _barbers
+fun getHairstyleById(id: String): Hairstyle {
+    return hairstyles.first { it.id == id }
+}
 
-    private val _hairstyles = mutableStateListOf<Hairstyle>()
-    val hairstyles: List<Hairstyle> get() = _hairstyles
-
-    private val _bookings = mutableStateListOf<Booking>()
-    val bookings: List<Booking> get() = _bookings
-
-    init {
-        loadInitialData()
-    }
-
-    private fun loadInitialData() {
-        _barbers.addAll(
-            listOf(
-                Barber(name = "John"),
-                Barber(name = "Alex")
-            )
-        )
-        _hairstyles.addAll(
-            listOf(
-                Hairstyle(name = "Fade", durationMinutes = 60),
-                Hairstyle(name = "Buzz Cut", durationMinutes = 30)
-            )
-        )
-    }
-
-    fun getAvailableBarbers(desiredTime: LocalDateTime, hairstyle: Hairstyle): List<Barber> {
-        val desiredEndTime = desiredTime.plusMinutes(hairstyle.durationMinutes.toLong())
-
-        return _barbers.filter { barber ->
-            _bookings.none { booking ->
-                booking.barberId == barber.id &&
-                        booking.dateTime < desiredEndTime &&
-                        booking.dateTime.plusMinutes(
-                            _hairstyles.first { it.id == booking.hairstyleId }.durationMinutes.toLong()
-                        ) > desiredTime
-            }
+@RequiresApi(Build.VERSION_CODES.O)
+fun getAvailableBarbers(requestedTime: LocalDateTime, hairstyle: Hairstyle): List<Barber> {
+    return barbers.filter { barber ->
+        bookings.none { booking ->
+            booking.barberId == barber.id &&
+                    requestedTime < booking.dateTime.plusMinutes(getHairstyleById(booking.hairstyleId).durationMinutes.toLong()) &&
+                    requestedTime.plusMinutes(hairstyle.durationMinutes.toLong()) > booking.dateTime
         }
-    }
-
-    fun createBooking(booking: Booking): Boolean {
-        val available = getAvailableBarbers(booking.dateTime, _hairstyles.first { it.id == booking.hairstyleId })
-            .any { it.id == booking.barberId }
-
-        return if (available) {
-            _bookings.add(booking)
-            true
-        } else {
-            false
-        }
-    }
-
-    fun updateBooking(updated: Booking) {
-        _bookings.replaceAll { if (it.id == updated.id) updated else it }
-    }
-
-    fun deleteBooking(id: String) {
-        _bookings.removeAll { it.id == id }
     }
 }
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun createBooking(booking: BarberBooking): Boolean {
+    val hairstyle = getHairstyleById(booking.hairstyleId)
+    val availableBarbers = getAvailableBarbers(booking.dateTime, hairstyle)
+    return if (availableBarbers.any { it.id == booking.barberId }) {
+        bookings.add(booking)
+        true
+    } else {
+        false
+    }
+}
+

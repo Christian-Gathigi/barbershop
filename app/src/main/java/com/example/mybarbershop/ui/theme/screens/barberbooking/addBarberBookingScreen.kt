@@ -1,13 +1,13 @@
 package com.example.mybarbershop.ui.theme.screens.barberbooking
 
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,73 +17,136 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.example.mybarbershop.data.BarberAppointmentModel
 import com.example.mybarbershop.data.BarberAppointmentModel.Barber
-import com.example.mybarbershop.data.BarberAppointmentModel.Booking
+import com.example.mybarbershop.data.BarberAppointmentModel.BarberBooking
 import com.example.mybarbershop.data.BarberAppointmentModel.Hairstyle
-import com.example.mybarbershop.models.BarberAppointmentViewModel
-import com.example.mybarbershop.ui.theme.screens.menssection.MensSectionScreen
 import java.time.LocalDateTime
+import java.time.LocalTime
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddBarberBooking(viewModel: BarberAppointmentViewModel) {
+fun AddBarberBookingScreen(viewModel: BarberAppointmentViewModel) {
+    val context = LocalContext.current
+
     val name = remember { mutableStateOf("") }
+    val timeInput = remember { mutableStateOf("") } // User input for time, e.g. "14:00"
     val selectedHairstyle = remember { mutableStateOf<Hairstyle?>(null) }
     val selectedBarber = remember { mutableStateOf<Barber?>(null) }
-    val selectedDateTime = remember { mutableStateOf(LocalDateTime.now().plusMinutes(1)) }
 
-    val availableBarbers = selectedHairstyle.value?.let {
-        viewModel.getAvailableBarbers(selectedDateTime.value, it)
-    } ?: emptyList()
+    val selectedDateTime = remember(timeInput.value) {
+        try {
+            val parsedTime = LocalTime.parse(timeInput.value)
+            LocalDateTime.of(LocalDateTime.now().toLocalDate(), parsedTime)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    val availableBarbers = remember(selectedDateTime, selectedHairstyle.value) {
+        selectedDateTime?.let { time ->
+            selectedHairstyle.value?.let { hairstyle ->
+                viewModel.getAvailableBarbers(time, hairstyle)
+            }
+        } ?: emptyList()
+    }
 
     Column(Modifier.padding(16.dp)) {
-        OutlinedTextField(value = name.value, onValueChange = { name.value = it }, label = { Text("Your Name") })
+        OutlinedTextField(
+            value = name.value,
+            onValueChange = { name.value = it },
+            label = { Text("Your Name") },
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = timeInput.value,
+            onValueChange = { timeInput.value = it },
+            label = { Text("Time (HH:mm)") },
+            placeholder = { Text("e.g. 14:30") },
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        DropdownSelector(
+            label = "Select Hairstyle",
+            options = viewModel.hairstyles,
+            selectedOption = selectedHairstyle.value,
+            onOptionSelected = { selectedHairstyle.value = it }
+        )
 
         Spacer(Modifier.height(8.dp))
-        DropdownMenu("Select Hairstyle", viewModel.hairstyles.map { it.name }) {
-            selectedHairstyle.value = viewModel.hairstyles[it]
-        }
 
-        Spacer(Modifier.height(8.dp))
-        DropdownMenu("Select Barber", availableBarbers.map { it.name }) {
-            selectedBarber.value = availableBarbers[it]
-        }
-
-        Spacer(Modifier.height(8.dp))
-        // Custom DateTime Picker goes here...
+        DropdownSelector(
+            label = "Select Barber",
+            options = availableBarbers,
+            selectedOption = selectedBarber.value,
+            onOptionSelected = { selectedBarber.value = it }
+        )
 
         Spacer(Modifier.height(16.dp))
+
         Button(onClick = {
             val hairstyle = selectedHairstyle.value
             val barber = selectedBarber.value
-            if (name.value.isNotBlank() && hairstyle != null && barber != null) {
-                val booking = Booking(
+            val dateTime = selectedDateTime
+
+            if (name.value.isNotBlank() && hairstyle != null && barber != null && dateTime != null) {
+                val booking = BarberBooking(
                     clientName = name.value,
-                    dateTime = selectedDateTime.value,
+                    dateTime = dateTime,
                     barberId = barber.id,
                     hairstyleId = hairstyle.id
                 )
                 val success = viewModel.createBooking(booking)
                 if (!success) {
-                    Toast.makeText(LocalContext.current, "Barber not available!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Barber not available!", Toast.LENGTH_SHORT).show()
                 }
+            } else {
+                Toast.makeText(context, "Please complete all fields correctly", Toast.LENGTH_SHORT).show()
             }
         }) {
             Text("Book Now")
         }
 
-        selectedHairstyle.value?.let {
-            val endTime = selectedDateTime.value.plusMinutes(it.durationMinutes.toLong())
+        if (selectedDateTime != null && selectedHairstyle.value != null) {
+            val endTime = selectedDateTime.plusMinutes(selectedHairstyle.value!!.durationMinutes.toLong())
             Text("Ends at: ${endTime.toLocalTime()}", Modifier.padding(top = 8.dp))
         }
     }
 }
-@Preview(showBackground = true, showSystemUi = true)
+
 @Composable
-fun AddBarberBookingScreenPreview(){
-    AddBarberBooking( rememberNavController() )
+fun DropdownSelector(
+    label: String,
+    options: T,
+    selectedOption: BarberAppointmentModel.Barber?,
+    onOptionSelected: () -> Unit
+) {
+    TODO("Not yet implemented")
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showSystemUi = true, showBackground = true)
+@Composable
+fun AddBarberBookingScreenPreview() {
+    val fakeViewModel = object : BarberAppointmentViewModel() {
+        val hairstyles: List<Hairstyle>
+            get() = listOf(
+                Hairstyle(id = "1", name = "Buzz Cut", durationMinutes = 30),
+                Hairstyle(id = "2", name = "Fade", durationMinutes = 45)
+            )
 
+        fun getAvailableBarbers(time: LocalDateTime, hairstyle: Hairstyle): List<Barber> {
+            return listOf(
+                Barber(id = "1", name = "Joe"),
+                Barber(id = "2", name = "Mike")
+            )
+        }
 
+        fun createBooking(booking: BarberBooking): Boolean {
+            return true
+        }
+    }
+
+    AddBarberBookingScreen(viewModel = fakeViewModel)
+}
