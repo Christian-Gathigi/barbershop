@@ -40,12 +40,8 @@ import com.example.mybarbershop.navigation.ROUTE_ADD_BARBER_BOOKING
             Text("Men's Section")
             Spacer(modifier = Modifier.height(16.dp))
 
-            HairStyleCard(
-                title = "Cornrows",
-                imageRes = R.drawable.haircut,
-                onClick = { navController.navigate(ROUTE_ADD_BARBER_BOOKING) },
 
-            )
+
 
             Spacer(modifier = Modifier.height(8.dp))
 

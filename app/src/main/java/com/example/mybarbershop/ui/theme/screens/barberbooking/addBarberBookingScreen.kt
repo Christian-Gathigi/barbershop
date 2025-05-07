@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,16 +18,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.mybarbershop.data.BarberAppointmentModel
-import com.example.mybarbershop.data.BarberAppointmentModel.Barber
-import com.example.mybarbershop.data.BarberAppointmentModel.BarberBooking
-import com.example.mybarbershop.data.BarberAppointmentModel.Hairstyle
+import com.example.mybarbershop.R
+import com.example.mybarbershop.data.Barber
+import com.example.mybarbershop.data.Booking
+import com.example.mybarbershop.data.Hairstyle
+import com.example.mybarbershop.models.BarberViewModel
+
 import java.time.LocalDateTime
 import java.time.LocalTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AddBarberBookingScreen(viewModel: BarberAppointmentViewModel) {
+fun AddBarberBookingScreen(viewModel: BarberViewModel) {
     val context = LocalContext.current
 
     val name = remember { mutableStateOf("") }
@@ -51,6 +54,7 @@ fun AddBarberBookingScreen(viewModel: BarberAppointmentViewModel) {
         } ?: emptyList()
     }
 
+
     Column(Modifier.padding(16.dp)) {
         OutlinedTextField(
             value = name.value,
@@ -66,14 +70,12 @@ fun AddBarberBookingScreen(viewModel: BarberAppointmentViewModel) {
             placeholder = { Text("e.g. 14:30") },
             modifier = Modifier.padding(bottom = 8.dp)
         )
-
         DropdownSelector(
             label = "Select Hairstyle",
             options = viewModel.hairstyles,
             selectedOption = selectedHairstyle.value,
             onOptionSelected = { selectedHairstyle.value = it }
         )
-
         Spacer(Modifier.height(8.dp))
 
         DropdownSelector(
@@ -91,7 +93,7 @@ fun AddBarberBookingScreen(viewModel: BarberAppointmentViewModel) {
             val dateTime = selectedDateTime
 
             if (name.value.isNotBlank() && hairstyle != null && barber != null && dateTime != null) {
-                val booking = BarberBooking(
+                val booking = Booking(
                     clientName = name.value,
                     dateTime = dateTime,
                     barberId = barber.id,
@@ -114,36 +116,53 @@ fun AddBarberBookingScreen(viewModel: BarberAppointmentViewModel) {
         }
     }
 }
-
 @Composable
-fun DropdownSelector(
+fun <T> DropdownSelector(
     label: String,
-    options: T,
-    selectedOption: BarberAppointmentModel.Barber?,
-    onOptionSelected: () -> Unit
+    options: List<T>,
+    selectedOption: T?,
+    onOptionSelected: (T) -> Unit
 ) {
-    TODO("Not yet implemented")
+    val expanded = remember { mutableStateOf(false) }
+
+    Column {
+        Button(onClick = { expanded.value = true }) {
+            Text(text = selectedOption?.toString() ?: label)
+        }
+
+        DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
+            options.forEach { option ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text(option.toString()) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded.value = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun AddBarberBookingScreenPreview() {
-    val fakeViewModel = object : BarberAppointmentViewModel() {
-        val hairstyles: List<Hairstyle>
-            get() = listOf(
-                Hairstyle(id = "1", name = "Buzz Cut", durationMinutes = 30),
-                Hairstyle(id = "2", name = "Fade", durationMinutes = 45)
-            )
+    val fakeViewModel = object : BarberViewModel() {
 
-        fun getAvailableBarbers(time: LocalDateTime, hairstyle: Hairstyle): List<Barber> {
+        override val hairstyles = listOf(
+            Hairstyle(id = "1", name = "Buzz Cut", durationMinutes = 30),
+            Hairstyle(id = "2", name = "Fade", durationMinutes = 45 )
+        )
+
+        override fun getAvailableBarbers(time: LocalDateTime, hairstyle: Hairstyle): List<Barber> {
             return listOf(
                 Barber(id = "1", name = "Joe"),
                 Barber(id = "2", name = "Mike")
             )
         }
 
-        fun createBooking(booking: BarberBooking): Boolean {
+        override fun createBooking(booking: Booking): Boolean {
             return true
         }
     }
