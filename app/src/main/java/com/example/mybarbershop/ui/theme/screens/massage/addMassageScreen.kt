@@ -1,5 +1,6 @@
 package com.example.mybarbershop.ui.theme.screens.massage
 
+import android.R.id.message
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -21,7 +22,7 @@ import java.time.format.DateTimeParseException
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MassageBookingForm(viewModel: MassageBookingViewModel) {
+fun MassageBookingForm(viewModel: MassageBookingViewModel, onBookingSuccess: Function<Unit>) {
     val context = LocalContext.current
 
     val name = remember { mutableStateOf(TextFieldValue("")) }
@@ -136,5 +137,9 @@ fun MassageBookingForm(viewModel: MassageBookingViewModel) {
 @Composable
 @Preview(showBackground = true)
 fun MassageBookingFormPreview() {
-    MassageBookingForm(viewModel = MassageBookingViewModel())
+    MassageBookingForm(
+        viewModel = MassageBookingViewModel(),
+        onBookingSuccess = { /* No-op for preview */ }
+    )
 }
+

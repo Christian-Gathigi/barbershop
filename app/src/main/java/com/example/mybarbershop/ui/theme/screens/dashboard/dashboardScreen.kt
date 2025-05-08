@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.mybarbershop.R
-import com.example.mybarbershop.navigation.ROUTE_MASSAGE
+import com.example.mybarbershop.navigation.ROUTE_ADD_MASSAGE
 import com.example.mybarbershop.navigation.ROUTE_MENSSECTION
 import com.example.mybarbershop.navigation.ROUTE_WOMENSSECTION
 
@@ -196,7 +196,7 @@ fun DashboardScreen(navController: NavController){
                 Card(
                     modifier = Modifier
                         .padding(10.dp)
-                        .clickable { navController.navigate(ROUTE_MASSAGE) },
+                        .clickable { navController.navigate(ROUTE_ADD_MASSAGE) },
                     shape = RoundedCornerShape(20.dp),
                     elevation = CardDefaults.cardElevation(10.dp),
                     colors = CardDefaults.cardColors(Color.Black)

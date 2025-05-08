@@ -3,12 +3,15 @@ package com.example.mybarbershop.ui.theme.screens.barberbooking
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mybarbershop.R
@@ -97,7 +101,8 @@ fun AddBarberBookingScreen(viewModel: BarberViewModel) {
                     clientName = name.value,
                     dateTime = dateTime,
                     barberId = barber.id,
-                    hairstyleId = hairstyle.id
+                    hairstyleId = hairstyle.id,
+                    id = TODO()
                 )
                 val success = viewModel.createBooking(booking)
                 if (!success) {
@@ -117,6 +122,44 @@ fun AddBarberBookingScreen(viewModel: BarberViewModel) {
     }
 }
 @Composable
+fun HairstyleDropdownSelector(
+    label: String,
+    options: List<Hairstyle>,
+    selectedOption: Hairstyle?,
+    onOptionSelected: (Hairstyle) -> Unit
+) {
+    val expanded = remember { mutableStateOf(false) }
+
+    Column {
+        Button(onClick = { expanded.value = true }) {
+            Text(text = selectedOption?.name ?: label)
+        }
+
+        DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = {
+                        Row {
+                            Image(
+                                painter = painterResource(id = option.imageResId),
+                                contentDescription = option.name,
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .padding(end = 8.dp)
+                            )
+                            Text(option.name)
+                        }
+                    },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded.value = false
+                    }
+                )
+            }
+        }
+    }
+}
+@Composable
 fun <T> DropdownSelector(
     label: String,
     options: List<T>,
@@ -132,7 +175,7 @@ fun <T> DropdownSelector(
 
         DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
             options.forEach { option ->
-                androidx.compose.material3.DropdownMenuItem(
+                DropdownMenuItem(
                     text = { Text(option.toString()) },
                     onClick = {
                         onOptionSelected(option)
@@ -144,15 +187,21 @@ fun <T> DropdownSelector(
     }
 }
 
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 fun AddBarberBookingScreenPreview() {
     val fakeViewModel = object : BarberViewModel() {
 
-        override val hairstyles = listOf(
-            Hairstyle(id = "1", name = "Buzz Cut", durationMinutes = 30),
-            Hairstyle(id = "2", name = "Fade", durationMinutes = 45 )
+        val fakeHairstyles= listOf(
+            Hairstyle(id = "1", name = "Buzz Cut", durationMinutes = 30, imageResId = R.drawable.buzzcut),
+            Hairstyle(id = "2", name = "Afro Mohawk", durationMinutes = 45, imageResId = R.drawable.afromohawk),
+            Hairstyle(id = "3", name = "Braids", durationMinutes = 50, imageResId = R.drawable.braids),
+            Hairstyle(id = "4", name = "Mid Taper", durationMinutes = 40, imageResId = R.drawable.midtaper),
+            Hairstyle(id = "5", name = "Afro Taper", durationMinutes = 25, imageResId = R.drawable.afrotaper),
+            Hairstyle(id = "5", name = "Haircut", durationMinutes = 25, imageResId = R.drawable.haircut),
+            Hairstyle(id = "5", name = "Beard trim", durationMinutes = 25, imageResId = R.drawable.afrotaper)
         )
 
         override fun getAvailableBarbers(time: LocalDateTime, hairstyle: Hairstyle): List<Barber> {
