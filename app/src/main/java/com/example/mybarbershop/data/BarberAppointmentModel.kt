@@ -1,5 +1,7 @@
 package com.example.mybarbershop.data
 
+import android.util.Log
+
 import java.time.LocalDateTime
 
 data class Hairstyle(
@@ -9,14 +11,10 @@ data class Hairstyle(
     val imageResId: Int
 )
 
-
-
 data class Booking(
     val id: String,
     val clientName: String,
     val dateTime: LocalDateTime,
     val hairstyleId: String
 )
-
-
 

@@ -82,17 +82,27 @@ fun AddBarberBookingScreen(viewModel: BarberViewModel, onBookingCreated: () -> U
 
         Button(onClick = {
             val hairstyle = selectedHairstyle.value
-            
+
             val dateTime = selectedDateTime
 
-            if (name.value.isNotBlank() && hairstyle != null && dateTime != null) {
+            if (name.value.isNotBlank() && hairstyle != null  && dateTime != null) {
                 val booking = Booking(
-                    id = UUID.randomUUID().toString(),
+                    id = java.util.UUID.randomUUID().toString(), // ✅ Generate unique ID
                     clientName = name.value,
                     dateTime = dateTime,
-                    hairstyleId = hairstyle.id,
-                )
 
+                    hairstyleId = hairstyle.id
+                )
+                viewModel.uploadBookingRealtime(
+                    booking,
+                    onSuccess = {
+                        Toast.makeText(LocalContext.current, "Booking saved!", Toast.LENGTH_SHORT).show()
+                        navController.popBackStack()
+                    },
+                    onError = {
+                        Toast.makeText(LocalContext.current, "Error: ${it.message}", Toast.LENGTH_LONG).show()
+                    }
+                )
                 val success = viewModel.createBooking(booking)
                 if (!success) {
                     Toast.makeText(context, "Barber not available!", Toast.LENGTH_SHORT).show()
@@ -103,14 +113,13 @@ fun AddBarberBookingScreen(viewModel: BarberViewModel, onBookingCreated: () -> U
         }) {
             Text("Book Now")
         }
-
         if (selectedDateTime != null && selectedHairstyle.value != null) {
             val endTime = selectedDateTime.plusMinutes(selectedHairstyle.value!!.durationMinutes.toLong())
             Text("Ends at: ${endTime.toLocalTime()}", Modifier.padding(top = 8.dp))
         }
     }
 }
-@Composable
+        @Composable
 fun HairstyleDropdownSelector(
     label: String,
     options: List<Hairstyle>,

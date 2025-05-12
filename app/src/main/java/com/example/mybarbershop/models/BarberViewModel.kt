@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.example.mybarbershop.R
 import com.example.mybarbershop.data.Booking
 import com.example.mybarbershop.data.Hairstyle
+import com.google.firebase.database.FirebaseDatabase
 
 @RequiresApi(Build.VERSION_CODES.O)
 open class BarberViewModel : ViewModel() {
@@ -50,6 +51,15 @@ open class BarberViewModel : ViewModel() {
     fun getHairstyleById(id: String): Hairstyle? =
         hairstyles.find { it.id == id }
 
+    fun uploadBookingRealtime(booking: Booking, onSuccess: () -> Unit, onError: (Exception) -> Unit) {
+        val database = FirebaseDatabase.getInstance()
+        val bookingsRef = database.getReference("bookings")
+
+        val newBookingRef = bookingsRef.push() // Auto ID
+        newBookingRef.setValue(booking)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onError(it) }
+    }
 
 
     fun updateBooking(updatedBooking: Booking): Boolean {
