@@ -1,4 +1,4 @@
-package com.example.mybarbershop.data
+package com.example.mybarbershop.model
 
 import java.time.LocalDateTime
 

@@ -1,10 +1,10 @@
-package com.example.mybarbershop.models
+package com.example.mybarbershop.data
 
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
-import com.example.mybarbershop.data.Massage
-import com.example.mybarbershop.data.MassageBooking
+import com.example.mybarbershop.model.Massage
+import com.example.mybarbershop.model.MassageBooking
 
 import java.time.LocalDateTime
 

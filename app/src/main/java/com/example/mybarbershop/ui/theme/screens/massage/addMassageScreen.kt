@@ -1,6 +1,5 @@
 package com.example.mybarbershop.ui.theme.screens.massage
 
-import android.R.id.message
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -12,8 +11,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.mybarbershop.data.Massage
-import com.example.mybarbershop.models.MassageBookingViewModel
+import com.example.mybarbershop.model.Massage
+import com.example.mybarbershop.data.MassageBookingViewModel
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime

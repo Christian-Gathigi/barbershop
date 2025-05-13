@@ -1,110 +1,214 @@
 package com.example.mybarbershop.ui.theme.screens.barberbooking
 
 import android.os.Build
-import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.mybarbershop.data.Booking
-import com.example.mybarbershop.models.BarberViewModel
+import com.example.mybarbershop.data.BarberAppointmentViewModel
+import com.example.mybarbershop.model.Hairstyle
 import java.time.LocalDateTime
-import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import androidx.compose.material.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.items
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UpdateBarberBookingScreen(
     navController: NavController,
-    viewModel: BarberViewModel,
-    bookingToEdit: Booking,
-    onUpdateComplete: () -> Unit
+    bookingId: String,
+    barberAppointmentViewModel: BarberAppointmentViewModel = viewModel()
 ) {
-    val context = LocalContext.current
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
-    val name = remember { mutableStateOf(bookingToEdit.clientName) }
-    val timeInput = remember { mutableStateOf(bookingToEdit.dateTime.toLocalTime().toString()) }
-    val selectedHairstyle = remember {
-        mutableStateOf(viewModel.getHairstyleById(bookingToEdit.hairstyleId))
+    // Load appointment when screen opens
+    LaunchedEffect(bookingId) {
+        barberAppointmentViewModel.loadAppointmentById(bookingId)
     }
 
-    val selectedDateTime = remember(timeInput.value) {
-        try {
-            val parsedTime = LocalTime.parse(timeInput.value)
-            LocalDateTime.of(LocalDateTime.now().toLocalDate(), parsedTime)
-        } catch (e: Exception) {
-            null
+    val currentAppointment by barberAppointmentViewModel.currentAppointment.collectAsState()
+
+    var clientName by remember { mutableStateOf("") }
+    var selectedHairstyle by remember { mutableStateOf<Hairstyle?>(null) }
+    var startTimeText by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Sync UI state with loaded appointment
+    LaunchedEffect(currentAppointment) {
+        currentAppointment?.let {
+            clientName = it.clientName
+            selectedHairstyle = it.hairstyle
+            startTimeText = it.startTime.format(formatter)
         }
     }
 
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("Update Booking") })
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            OutlinedTextField(
+                value = clientName,
+                onValueChange = {
+                    clientName = it
+                    barberAppointmentViewModel.updateClientName(it)
+                },
+                label = { Text("Client Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-    Column(Modifier.padding(16.dp)) {
-        OutlinedTextField(
-            value = name.value,
-            onValueChange = { name.value = it },
-            label = { Text("Client Name") },
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+            Text("Select Hairstyle")
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+            ) {
+                items(barberAppointmentViewModel.hairstyles) { hairstyle ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                selectedHairstyle = hairstyle
+                                barberAppointmentViewModel.updateHairstyle(hairstyle)
+                            }
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = hairstyle == selectedHairstyle,
+                            onClick = {
+                                selectedHairstyle = hairstyle
+                                barberAppointmentViewModel.updateHairstyle(hairstyle)
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("${hairstyle.name} (${hairstyle.durationMinutes} mins)")
+                    }
+                }}
 
-        OutlinedTextField(
-            value = timeInput.value,
-            onValueChange = { timeInput.value = it },
-            label = { Text("Time (HH:mm)") },
-            placeholder = { Text("e.g. 14:00") },
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+            OutlinedTextField(
+                value = startTimeText,
+                onValueChange = {
+                    startTimeText = it
+                    try {
+                        val parsed = LocalDateTime.parse(it, formatter)
+                        barberAppointmentViewModel.updateStartTime(parsed)
+                        errorMessage = null
+                    } catch (e: Exception) {
+                        errorMessage = "Invalid date/time format"
+                    }
+                },
+                label = { Text("Start Time (yyyy-MM-dd HH:mm)") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        DropdownSelector(
-            label = "Select Hairstyle",
-            options = viewModel.hairstyles,
-            selectedOption = selectedHairstyle.value,
-            onOptionSelected = { selectedHairstyle.value = it },
-            optionLabel = { it.name }
-        )
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = {
-            val hairstyle = selectedHairstyle.value
-
-            val dateTime = selectedDateTime
-
-            if (name.value.isNotBlank() && hairstyle != null && dateTime != null) {
-                val updatedBooking = bookingToEdit.copy(
-                    clientName = name.value,
-                    dateTime = dateTime,
-                    hairstyleId = hairstyle.id,
-
-                )
-
-                val success = viewModel.updateBooking(updatedBooking)
-                if (success) {
-                    Toast.makeText(context, "Booking Updated!", Toast.LENGTH_SHORT).show()
-                    onUpdateComplete()
-                } else {
-                    Toast.makeText(context, "Barber not available at that time.", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(context, "Please complete all fields", Toast.LENGTH_SHORT).show()
+            errorMessage?.let {
+                Text(text = it, color = MaterialTheme.colorScheme.error)
             }
-        }) {
-            Text("Update Booking")
-        }
 
-        if (selectedDateTime != null && selectedHairstyle.value != null) {
-            val endTime = selectedDateTime.plusMinutes(selectedHairstyle.value!!.durationMinutes.toLong())
-            Text("Ends at: ${endTime.toLocalTime()}", Modifier.padding(top = 8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(onClick = { navController.popBackStack() }) {
+                    Text("Cancel")
+                }
+                Button(onClick = {
+                    if (clientName.isBlank()) {
+                        errorMessage = "Client name cannot be empty"
+                        return@Button
+                    }
+                    if (selectedHairstyle == null) {
+                        errorMessage = "Please select a hairstyle"
+                        return@Button
+                    }
+                    try {
+                        val start = LocalDateTime.parse(startTimeText, formatter)
+                        val end = start.plusMinutes(selectedHairstyle!!.durationMinutes.toLong())
+
+                        val isAvailable = barberAppointmentViewModel.isTimeSlotAvailable(
+                            proposedStart = start,
+                            proposedEnd = end,
+                            excludeBookingId = bookingId
+                        )
+
+                        if (!isAvailable) {
+                            errorMessage = "This time slot overlaps with another booking."
+                            return@Button
+                        }
+
+                        val updatedAppointment = currentAppointment?.copy(
+                            clientName = clientName,
+                            hairstyle = selectedHairstyle!!,
+                            startTime = start,
+                            endTime = end
+                        ) ?: return@Button
+
+                        barberAppointmentViewModel.saveAppointmentToFirebase(updatedAppointment) {
+                            errorMessage = null
+                            navController.popBackStack()
+                        }
+                    } catch (e: Exception) {
+                        errorMessage = "Invalid start time"
+                    }
+                }) {
+                    Text("Save")
+                }
+            }
+        }}}
+
+@Composable
+fun HairstyleSelectionList(
+    hairstyles: List<Hairstyle>,
+    selectedHairstyle: Hairstyle?,
+    onHairstyleSelected: (Hairstyle) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(150.dp)
+    ) {
+        items(hairstyles) { hairstyle ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onHairstyleSelected(hairstyle)
+                    }
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = hairstyle == selectedHairstyle,
+                    onClick = {
+                        onHairstyleSelected(hairstyle)
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "${hairstyle.name} (${hairstyle.durationMinutes} mins)")
+            }
         }
     }
 }
+

@@ -2,87 +2,91 @@ package com.example.mybarbershop.ui.theme.screens.barberbooking
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.mybarbershop.data.Booking
-import com.example.mybarbershop.models.BarberViewModel
-import com.example.mybarbershop.navigation.ROUTE_UPDATE_BARBER_BOOKING
+import com.example.mybarbershop.data.BarberAppointmentViewModel
+import com.example.mybarbershop.model.BarberAppointmentModel
+import java.time.format.DateTimeFormatter
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ViewBarberBookingsScreen(
     navController: NavController,
-    viewModel: BarberViewModel,
-    onEditBooking: (Int) -> Unit,
+    barberAppointmentViewModel: BarberAppointmentViewModel = viewModel()
 ) {
-    val bookings = viewModel.bookings
-    var showConfirmDialog by remember { mutableStateOf(false) }
-    var bookingToDelete by remember { mutableStateOf<Booking?>(null) }
+    val appointments = barberAppointmentViewModel.appointments.collectAsState()
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("All Bookings", style = MaterialTheme.typography.headlineSmall)
 
-        if (bookings.isEmpty()) {
-            Text("No bookings found", modifier = Modifier.padding(top = 16.dp))
-        } else {
-            bookings.forEach { booking ->
-                val hairstyle = viewModel.getHairstyleById(booking.hairstyleId)
+    LaunchedEffect(Unit) {
+        barberAppointmentViewModel.fetchAppointments()
+    }
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "All Barber Bookings",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(16.dp)
+        )
 
-                Card(
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Client: ${booking.clientName}")
-                        Text("Time: ${booking.dateTime.toLocalTime()}")
-                        Text("Hairstyle: ${hairstyle?.name ?: "Unknown"}")
-                        Spacer(modifier = Modifier.height(8.dp))
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(appointments.value) { appointment ->
+                BookingItem(
+                    booking = appointment,
+                    navController = navController,
+                    viewModel = barberAppointmentViewModel,
+                    formatter = formatter
+                )
+            }
+        }
+    }
+}
 
-                        Row {
-                            Button(
-                                onClick = {
-                                    navController.navigate("$ROUTE_UPDATE_BARBER_BOOKING/${booking.id}")
-                                }
-                            ) {
-                                Text("Edit")
-                            }
+@Composable
+fun BookingItem(
+    booking: BarberAppointmentModel,
+    navController: NavController,
+    viewModel: BarberAppointmentViewModel,
+    formatter: DateTimeFormatter?
 
-                            Spacer(modifier = Modifier.width(8.dp))
 
-                            Button(
-                                onClick = {
-                                    viewModel.deleteBooking(booking.id)
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                            ) {
-                                Text("Delete")
-                            }
-                        }
-                    }
+    ) {
+    Card(modifier = Modifier.padding(8.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Client: ${booking.clientName}")
+            Text("Hairstyle: ${booking.hairstyle.name}")
+            Text("Start: ${booking.startTime}")
+            Text("End: ${booking.endTime}")
+
+            Row {
+                Button(onClick = {
+                    viewModel.deleteAppointment(booking.bookingid)
+                }) {
+                    Text("Remove")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    navController.navigate("update_booking/${booking.bookingid}")
+                }) {
+                    Text("Update")
                 }
             }
         }
     }
 }
+

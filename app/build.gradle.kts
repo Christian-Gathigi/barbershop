@@ -53,9 +53,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.firebase.auth)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.firebase.auth)
     implementation(libs.googleid)
     implementation(libs.firebase.database)
     testImplementation(libs.junit)
@@ -74,9 +74,13 @@ dependencies {
     implementation ("androidx.compose.ui:ui:1.5.4")
     implementation ("androidx.compose.material3:material3:1.1.2")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.5.4")
-    debugImplementation ("androidx.compose.ui:ui-tooling:1.5.4")
     implementation("androidx.navigation:navigation-compose:2.7.5")
-    implementation ("com.google.firebase:firebase-database-ktx")
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation ("com.google.firebase:firebase-auth:22.0.0")
+    implementation ("com.google.firebase:firebase-firestore:24.7.1")
+    implementation ("com.google.firebase:firebase-analytics:21.2.0")
+    debugImplementation ("androidx.compose.ui:ui-tooling:1.5.4")
 
 }
 
